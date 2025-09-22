@@ -43,19 +43,17 @@ RUN a2enmod rewrite && \
     </Directory>\n\
 </VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
+# Copiar y configurar entrypoint
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 # Asignar permisos correctos
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
     && chmod -R 755 /var/www/html/bootstrap/cache
 
-# Generar key y cachear configuración en runtime (no en build)
-# Esto es mejor hacerlo en un entrypoint para no invalidar el build cada vez
-# Por ahora lo dejamos como opcional
-# RUN php artisan key:generate --force || true
-# RUN php artisan config:cache || true
-
 # Exponer puerto 80
 EXPOSE 80
 
-# Iniciar Apache
-CMD ["apache2-foreground"]
+# Usar entrypoint personalizado
+ENTRYPOINT ["docker-entrypoint.sh"]
