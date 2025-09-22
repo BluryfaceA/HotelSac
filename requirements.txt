@@ -1,0 +1,45 @@
+# Requirements for proyecto_hotel Laravel application
+
+# PHP Version
+php>=8.1
+
+# PHP Extensions
+ext-pgsql
+ext-mbstring
+ext-openssl
+ext-pdo
+ext-tokenizer
+ext-xml
+ext-ctype
+ext-json
+ext-bcmath
+ext-fileinfo
+
+# Composer Dependencies (from composer.json)
+laravel/framework==^8.40
+laravel/jetstream==^2.3
+laravel/sanctum==^2.6
+laravel/tinker==^2.5
+barryvdh/laravel-dompdf==^0.9.0
+fideloper/proxy==^4.4
+fruitcake/laravel-cors==^2.0
+guzzlehttp/guzzle==^7.0.1
+jeroennoten/laravel-adminlte==^3.6
+laravelcollective/html==^6.2
+livewire/livewire==^2.5
+spatie/laravel-permission==^4.2
+
+# Development Dependencies
+facade/ignition==^2.5
+fakerphp/faker==^1.9.1
+laravel/sail==^1.0.1
+mockery/mockery==^1.4.2
+nunomaduro/collision==^5.0
+phpunit/phpunit==^9.3.3
+
+# Node.js Dependencies (from package.json)
+# Run: npm install
+# See package.json for complete list
+
+# Database
+postgresql>=12.0
