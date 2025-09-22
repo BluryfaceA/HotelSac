@@ -1,4 +1,4 @@
-FROM php:8.0-apache
+FROM php:8.1-apache
 
 # Install system dependencies
 RUN apt-get update && apt-get install -y \
@@ -21,8 +21,8 @@ WORKDIR /var/www/html
 # Copy existing application directory contents
 COPY . /var/www/html
 
-# Install PHP dependencies
-RUN composer install --no-dev --optimize-autoloader --ignore-platform-req=ext-pgsql
+# Remove lock file and install PHP dependencies
+RUN rm -f composer.lock && composer install --no-dev --optimize-autoloader
 
 # Configure Apache
 RUN a2enmod rewrite
