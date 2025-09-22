@@ -1,6 +1,6 @@
 FROM php:8.1-apache
 
-# Install system dependencies
+# Instalar dependencias del sistema
 RUN apt-get update && apt-get install -y \
     git \
     curl \
@@ -10,23 +10,32 @@ RUN apt-get update && apt-get install -y \
     libpq-dev \
     zip \
     unzip \
-    && docker-php-ext-install pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd
+    && docker-php-ext-install pdo pdo_pgsql pgsql mbstring exif pcntl bcmath gd \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
-# Get latest Composer
+# Copiar Composer desde la imagen oficial
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory
+# Definir directorio de trabajo
 WORKDIR /var/www/html
 
-# Copy existing application directory contents
-COPY . /var/www/html
+# Copiar composer.json y composer.lock (si existe)
+COPY composer.json composer.lock* ./
 
-# Remove lock file and install PHP dependencies
-RUN rm -f composer.lock && composer install --no-dev --optimize-autoloader
+# Instalar dependencias PHP evitando problemas de git y root
+RUN COMPOSER_ALLOW_SUPERUSER=1 composer install \
+    --no-dev \
+    --optimize-autoloader \
+    --prefer-dist \
+    --no-scripts \
+    --no-interaction
 
-# Configure Apache
-RUN a2enmod rewrite
-RUN echo '<VirtualHost *:80>\n\
+# Copiar el resto de la aplicación
+COPY . .
+
+# Habilitar mod_rewrite y configurar VirtualHost
+RUN a2enmod rewrite && \
+    echo '<VirtualHost *:80>\n\
     DocumentRoot /var/www/html/public\n\
     <Directory /var/www/html/public>\n\
         AllowOverride All\n\
@@ -34,19 +43,19 @@ RUN echo '<VirtualHost *:80>\n\
     </Directory>\n\
 </VirtualHost>' > /etc/apache2/sites-available/000-default.conf
 
-# Set permissions
+# Asignar permisos correctos
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html/storage \
     && chmod -R 755 /var/www/html/bootstrap/cache
 
-# Generate application key if needed
-RUN php artisan key:generate --force || true
+# Generar key y cachear configuración en runtime (no en build)
+# Esto es mejor hacerlo en un entrypoint para no invalidar el build cada vez
+# Por ahora lo dejamos como opcional
+# RUN php artisan key:generate --force || true
+# RUN php artisan config:cache || true
 
-# Cache config
-RUN php artisan config:cache || true
-
-# Expose port 80
+# Exponer puerto 80
 EXPOSE 80
 
-# Start Apache
+# Iniciar Apache
 CMD ["apache2-foreground"]
